@@ -1,0 +1,14 @@
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border-radius: var(--vdu-radius-full);
+  background: var(--vdu-color-primary);
+  color: var(--vdu-color-primary-contrast);
+  font-size: var(--vdu-font-size-sm);
+  font-weight: 600;
+  user-select: none;
+}

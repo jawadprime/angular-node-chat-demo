@@ -1,0 +1,72 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--vdu-space-4);
+  min-height: 100vh;
+  padding: var(--vdu-space-6);
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.setup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vdu-space-3);
+  width: min(24rem, 100%);
+  padding: var(--vdu-space-4);
+  border: 1px solid var(--vdu-color-border);
+  border-radius: var(--vdu-radius-md);
+  background: var(--vdu-color-surface);
+}
+
+.setup label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vdu-space-1);
+  font-size: var(--vdu-font-size-sm);
+  color: var(--vdu-color-text-muted);
+}
+
+.setup input {
+  padding: var(--vdu-space-2) var(--vdu-space-3);
+  border: 1px solid var(--vdu-color-border);
+  border-radius: var(--vdu-radius-sm);
+  font: inherit;
+  color: var(--vdu-color-text);
+  background: var(--vdu-color-bg);
+}
+
+.setup input:focus-visible {
+  outline: 2px solid var(--vdu-color-primary);
+  outline-offset: 1px;
+}
+
+.setup button {
+  padding: var(--vdu-space-2) var(--vdu-space-4);
+  border: none;
+  border-radius: var(--vdu-radius-sm);
+  background: var(--vdu-color-primary);
+  color: var(--vdu-color-primary-contrast);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.setup button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.error {
+  margin: 0;
+  font-size: var(--vdu-font-size-sm);
+  color: var(--vdu-color-danger);
+}
+
+.chat {
+  width: min(32rem, 100%);
+  height: min(32rem, 70vh);
+}

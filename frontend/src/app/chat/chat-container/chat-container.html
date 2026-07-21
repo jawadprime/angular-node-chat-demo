@@ -1,0 +1,19 @@
+@if (initError(); as error) {
+  <div class="state error">{{ error }}</div>
+} @else if (chatService.connectionState() === 'connecting' || chatService.connectionState() === 'idle') {
+  <div class="state">Connecting…</div>
+} @else if (chatService.connectionState() === 'error') {
+  <div class="state error">Something went wrong connecting to chat.</div>
+} @else {
+  <div class="panel">
+    <app-message-list
+      class="message-list"
+      [messages]="chatService.messages()"
+      [readMessageIds]="chatService.readMessageIds()"
+      [loadingOlder]="chatService.loadingOlderMessages()"
+      (loadOlder)="onLoadOlder()"
+    />
+    <app-typing-indicator [typingUsers]="chatService.typingUsers()" />
+    <app-message-input (send)="onSend($event)" (typing)="onTyping()" />
+  </div>
+}

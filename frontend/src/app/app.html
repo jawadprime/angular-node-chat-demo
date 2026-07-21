@@ -1,0 +1,39 @@
+<main class="shell">
+  <h1>Viewdu Chat — Demo</h1>
+
+  @if (!connected()) {
+    <form class="setup" (submit)="$event.preventDefault(); onStart()">
+      @if (isJoining()) {
+        <label>
+          Your user ID
+          <input type="text" [value]="appUserId()" (input)="onUserIdInput($event)" placeholder="e.g. 123" required />
+        </label>
+      } @else {
+        <label>
+          Participant user IDs (comma separated)
+          <input
+            type="text"
+            [value]="participantIdsInput()"
+            (input)="onParticipantIdsInput($event)"
+            placeholder="e.g. 456, 789"
+          />
+        </label>
+
+        <label>
+          Topic
+          <input type="text" [value]="topic()" (input)="onTopicInput($event)" />
+        </label>
+      }
+
+      @if (startError(); as error) {
+        <p class="error">{{ error }}</p>
+      }
+
+      <button type="submit" [disabled]="starting()">
+        {{ isJoining() ? 'Join Chat' : 'Start Chat' }}
+      </button>
+    </form>
+  } @else {
+    <app-chat-container class="chat" [appUserId]="appUserId()" [threadId]="threadId()" />
+  }
+</main>

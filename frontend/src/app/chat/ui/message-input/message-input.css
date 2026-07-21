@@ -1,0 +1,49 @@
+.input-row {
+  display: flex;
+  gap: var(--vdu-space-2);
+  padding: var(--vdu-space-3);
+  border-top: 1px solid var(--vdu-color-border);
+  background: var(--vdu-color-surface);
+}
+
+.textarea {
+  flex: 1;
+  max-height: 6rem;
+  resize: none;
+  border: 1px solid var(--vdu-color-border);
+  border-radius: var(--vdu-radius-md);
+  padding: var(--vdu-space-2) var(--vdu-space-3);
+  font: inherit;
+  color: var(--vdu-color-text);
+  background: var(--vdu-color-bg);
+}
+
+.textarea:focus-visible {
+  outline: 2px solid var(--vdu-color-primary);
+  outline-offset: 1px;
+}
+
+.send-button {
+  border: none;
+  border-radius: var(--vdu-radius-md);
+  padding-inline: var(--vdu-space-4);
+  background: var(--vdu-color-primary);
+  color: var(--vdu-color-primary-contrast);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--vdu-motion-fast) var(--vdu-easing-standard);
+}
+
+.send-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.send-button:not(:disabled):hover {
+  opacity: 0.9;
+}
+
+.send-button:focus-visible {
+  outline: 2px solid var(--vdu-color-primary);
+  outline-offset: 2px;
+}

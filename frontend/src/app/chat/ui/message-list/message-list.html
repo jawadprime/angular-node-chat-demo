@@ -1,0 +1,16 @@
+<div
+  class="viewport"
+  appVirtualScrollViewport
+  [loadingOlder]="loadingOlder()"
+  (loadOlder)="loadOlder.emit()"
+>
+  <div class="spacer" [style.height.px]="virtualScroll.offsetBeforePx()"></div>
+
+  @for (message of virtualScroll.visibleMessages(); track message.id) {
+    <div class="row" #rowEl>
+      <app-message-item [message]="message" [isRead]="readMessageIds().has(message.id)" />
+    </div>
+  }
+
+  <div class="spacer" [style.height.px]="virtualScroll.offsetAfterPx()"></div>
+</div>

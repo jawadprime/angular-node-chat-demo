@@ -1,0 +1,11 @@
+<form class="input-row" (submit)="$event.preventDefault(); onSubmit()">
+  <textarea
+    class="textarea"
+    [value]="draft()"
+    rows="1"
+    placeholder="Type a message…"
+    (input)="onDraftInput($event)"
+    (keydown.enter)="$event.preventDefault(); onSubmit()"
+  ></textarea>
+  <button type="submit" class="send-button" [disabled]="!draft().trim()">Send</button>
+</form>
