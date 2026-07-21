@@ -1,0 +1,169 @@
+{
+  "info": {
+    "name": "Viewdu Chat — Backend",
+    "description": "Token issuance and chat thread creation for the Viewdu chat app. Everything else (sending/receiving messages, typing indicators, read receipts) happens directly between the frontend and Azure Communication Services using the token this API hands out.\n\nAll `/v1/chat/*` endpoints require an `x-user-id` header identifying the caller (a stand-in for a real logged-in user for now).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "b7e2f2b0-6c1a-4e3a-9a2b-viewdu-chat-backend"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "string" },
+    { "key": "userId", "value": "123", "type": "string" },
+    { "key": "participantUserId", "value": "456", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Confirms the API is running. Not versioned."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"status\": \"ok\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Chat",
+      "item": [
+        {
+          "name": "Issue Chat Token",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-user-id", "value": "{{userId}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/chat/token",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "chat", "token"]
+            },
+            "description": "Returns a fresh Azure Communication Services chat token for the current user. Creates their ACS identity the first time; reuses it on every later call, so the same user keeps access to their existing chat threads."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "x-user-id", "value": "123" }],
+                "url": { "raw": "{{baseUrl}}/v1/chat/token", "host": ["{{baseUrl}}"], "path": ["v1", "chat", "token"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"acsUserId\": \"8:acs:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx_00000000-0000-0000-0000-000000000000\",\n  \"token\": \"eyJhbGciOiJSUzI1NiIs...\",\n  \"expiresOn\": \"2026-07-20T03:30:42.504Z\"\n}"
+            },
+            {
+              "name": "401 Unauthorized (missing x-user-id)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": { "raw": "{{baseUrl}}/v1/chat/token", "host": ["{{baseUrl}}"], "path": ["v1", "chat", "token"] }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": \"Missing x-user-id header\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Chat Thread",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "x-user-id", "value": "{{userId}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participantAppUserIds\": [\"{{participantUserId}}\"],\n  \"topic\": \"Support chat\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/chat/threads",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "chat", "threads"]
+            },
+            "description": "Creates a chat room with the given participants (their app user ids — the backend resolves each one to an ACS identity, creating it if it doesn't exist yet). The caller is added to the thread automatically."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "x-user-id", "value": "123" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"participantAppUserIds\": [\"456\"],\n  \"topic\": \"Support chat\"\n}"
+                },
+                "url": { "raw": "{{baseUrl}}/v1/chat/threads", "host": ["{{baseUrl}}"], "path": ["v1", "chat", "threads"] }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"threadId\": \"19:acsV2_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@thread.v2\"\n}"
+            },
+            {
+              "name": "400 Bad Request (empty participants)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "x-user-id", "value": "123" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n  \"participantAppUserIds\": []\n}" },
+                "url": { "raw": "{{baseUrl}}/v1/chat/threads", "host": ["{{baseUrl}}"], "path": ["v1", "chat", "threads"] }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": \"Invalid request body\"\n}"
+            },
+            {
+              "name": "401 Unauthorized (missing x-user-id)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"participantAppUserIds\": [\"456\"]\n}" },
+                "url": { "raw": "{{baseUrl}}/v1/chat/threads", "host": ["{{baseUrl}}"], "path": ["v1", "chat", "threads"] }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": \"Missing x-user-id header\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
