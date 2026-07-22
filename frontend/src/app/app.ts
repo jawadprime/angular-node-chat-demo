@@ -2,10 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { ChatApiService } from './chat/data/chat-api.service';
 import { ChatContainer } from './chat/chat-container/chat-container';
 
-// Hardcoded on purpose: this demo has no login system, so whoever opens a
-// fresh link is always this one identity. Someone joining an existing thread
-// via a shared link still types their own id below — ACS needs a distinct
-// identity per participant.
+// Hardcoded on purpose — this demo has no login. A join link still asks for a user id below.
 const DEMO_HOST_USER_ID = 'demo-host';
 
 @Component({
@@ -26,11 +23,7 @@ export class App {
   protected readonly topic = signal('Demo chat');
   protected readonly starting = signal(false);
   protected readonly startError = signal<string | null>(null);
-
-  // Only flips on an explicit form submit — never merely from typing. The
-  // join case previously derived this from "is appUserId non-empty", which
-  // meant the very first keystroke mounted the chat with a half-typed user
-  // id, connecting as the wrong (usually nonexistent) identity.
+  
   private readonly hasJoined = signal(false);
 
   protected readonly connected = computed(() => this.hasJoined() && this.threadId().length > 0);

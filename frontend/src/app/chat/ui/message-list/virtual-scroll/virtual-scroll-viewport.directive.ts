@@ -4,9 +4,7 @@ import { VirtualScrollService } from './virtual-scroll.service';
 // Fire loadOlder once the user scrolls within this many px of the top.
 const LOAD_OLDER_THRESHOLD_PX = 300;
 
-// Pure DOM glue between a scrollable element and VirtualScrollService: hands
-// over the native element once, forwards scroll metrics, and emits loadOlder
-// near the top. No virtual-scroll math lives here — that's all in the service.
+// Connects the scroll element to the service. No scroll math here — that's all in the service.
 @Directive({
   selector: '[appVirtualScrollViewport]',
 })

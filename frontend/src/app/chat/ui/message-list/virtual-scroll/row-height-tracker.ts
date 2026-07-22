@@ -1,8 +1,6 @@
 import { Signal, signal } from '@angular/core';
 
-// Remembers each row's real measured height, keyed by message id. Read
-// `version` inside a computed()/effect() to react to updates — the map
-// itself is plain mutable state, not a signal.
+// Stores each row's measured height by message id. Read `version` to react to changes.
 export interface RowHeightTracker {
   readonly version: Signal<number>;
   get(id: string, fallback: number): number;
@@ -10,9 +8,7 @@ export interface RowHeightTracker {
   recordMeasurement(id: string, height: number): boolean;
 }
 
-// Sub-pixel noise between measurements of an unchanged row (font hinting,
-// layout rounding) shouldn't count as a real height change — it would bump
-// `version` and cascade a full geometry recompute for no visible difference.
+// Ignores tiny sub-pixel differences so they don't trigger a needless recompute.
 const MEASUREMENT_TOLERANCE_PX = 0.5;
 
 export function createRowHeightTracker(): RowHeightTracker {

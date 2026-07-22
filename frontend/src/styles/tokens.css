@@ -1,5 +1,4 @@
-/* Design tokens for the chat feature. Prefixed with --vdu- so nothing here
-   can collide with Viewdu's own CSS variables once this is embedded. */
+/* Design tokens for the chat feature, prefixed with --vdu- to avoid name clashes. */
 :root {
   --vdu-color-bg: #ffffff;
   --vdu-color-surface: #f4f5f7;

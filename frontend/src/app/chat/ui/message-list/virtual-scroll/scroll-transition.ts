@@ -1,7 +1,4 @@
-// Classifies how a message list changed between renders. Pure — no Angular,
-// no DOM. `prepended` and `appended` are independent, not mutually
-// exclusive: a history-load and a realtime message can resolve in the same
-// render, so both need to be checkable at once.
+// Classifies how the list changed. prepended and appended can both be true at once.
 export interface ScrollTransition {
   readonly initial: boolean;
   readonly prepended: boolean;

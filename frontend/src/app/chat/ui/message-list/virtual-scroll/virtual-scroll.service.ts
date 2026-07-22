@@ -7,16 +7,12 @@ import { createRowHeightTracker } from './row-height-tracker';
 // Seed height for a row before its first real measurement.
 const ESTIMATED_ROW_HEIGHT_PX = 64;
 
-// Extra px rendered above/below the viewport, so scrolling doesn't reveal
-// blank space before new rows mount.
+// Extra rows rendered above/below so scrolling doesn't show blank space.
 const BUFFER_PX = 600;
 
 const NEAR_BOTTOM_THRESHOLD_PX = 48;
 
-// Provided per-MessageList instance (not root): two open chat panels must
-// not share scroll state. VirtualScrollViewportDirective hands over the
-// viewport element via attachViewport(), since a plain service has no
-// template of its own to get an ElementRef from.
+// One instance per message list. The directive passes in the viewport element.
 @Injectable()
 export class VirtualScrollService {
   private readonly rowHeights = createRowHeightTracker();
@@ -30,7 +26,7 @@ export class VirtualScrollService {
   private readonly isNearBottom = signal(true);
 
   private readonly offsets = computed(() => {
-    this.rowHeights.version(); // establish reactive dependency on measured heights
+    this.rowHeights.version(); // reacts to height changes
     return computeOffsets(this.items(), this.heightOf);
   });
 
@@ -96,11 +92,7 @@ export class VirtualScrollService {
     });
   }
 
-  // Must run in afterRenderEffect, not a plain effect(): the spacer divs'
-  // heights come from totalHeight()/offsets() template bindings, which
-  // haven't flushed to the real DOM yet inside a plain effect — reading
-  // scrollHeight or writing scrollTop then sees stale, too-small content
-  // size, and the browser clamps the scrollTop write back to 0.
+  // Must use afterRenderEffect, not effect() — otherwise scrollTop resets to 0.
   private manageScrollPosition(): void {
     afterRenderEffect(() => {
       const element = this.viewportElement();
@@ -118,9 +110,7 @@ export class VirtualScrollService {
       const newLastId = msgs[msgs.length - 1].id;
       const transition = classifyScrollTransition(this.previousFirstId, this.previousLastId, newFirstId, newLastId);
 
-      // Checked independently, not as an if/else on one enum: a history-load
-      // (prepend) and a realtime message (append) can land in the same
-      // render, and both may need to apply.
+      // Checked separately, not either/or — a history-load and a new message can land together.
       if ((transition.initial || transition.appended) && untracked(() => this.isNearBottom())) {
         this.setScrollTop(this.totalHeight() - this.viewportHeight());
       } else if (transition.prepended) {
@@ -136,9 +126,7 @@ export class VirtualScrollService {
     });
   }
 
-  // Writing element.scrollTop doesn't synchronously update the scrollTop
-  // signal — every programmatic scroll goes through here so visibleRange
-  // never computes from a stale position.
+  // Setting scrollTop directly doesn't update our signal — always go through here.
   private setScrollTop(value: number): void {
     const element = this.viewportElement();
     if (!element) return;

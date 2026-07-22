@@ -26,8 +26,7 @@ export class ChatApiService {
     );
   }
 
-  // Handed to AzureCommunicationTokenCredential so the ACS SDK refreshes the
-  // token proactively before it expires.
+  // Lets the ACS SDK refresh the token itself before it expires.
   createTokenRefresher(appUserId: string): () => Promise<string> {
     return async () => (await this.fetchToken(appUserId)).token;
   }

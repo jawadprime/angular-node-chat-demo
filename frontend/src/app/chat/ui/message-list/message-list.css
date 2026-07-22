@@ -2,8 +2,6 @@
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  /* The browser's own scroll anchoring would fight our manual scroll-position
-     adjustments on prepend/append — we already compensate for content
-     inserted above the viewport ourselves. */
+  /* Turns off the browser's own scroll anchoring — we handle it ourselves. */
   overflow-anchor: none;
 }

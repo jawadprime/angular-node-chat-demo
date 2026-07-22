@@ -1,5 +1,4 @@
-// Pure math for a variable-height virtual scroll list. No Angular, no DOM —
-// testable with plain arrays.
+// Plain math for the virtual scroll list. No Angular, no DOM.
 
 export interface VisibleRange {
   start: number;
@@ -24,9 +23,7 @@ export function computeTotalHeight<T>(items: readonly T[], offsets: readonly num
   return offsets[lastIndex] + heightOf(items[lastIndex]);
 }
 
-// First index in offsets[from..] at or past target. offsets is sorted
-// (cumulative sum of non-negative heights), so this is a binary search
-// rather than a scan — matters here because it reruns on every scroll event.
+// Finds the first offset at or past target. Binary search since this runs on every scroll.
 function lowerBound(offsets: readonly number[], target: number, from = 0): number {
   let lo = from;
   let hi = offsets.length;
@@ -38,9 +35,7 @@ function lowerBound(offsets: readonly number[], target: number, from = 0): numbe
   return lo;
 }
 
-// Which index range should actually be rendered, given the current scroll
-// position and a buffer so scrolling doesn't reveal blank space before new
-// rows mount.
+// Works out which rows to render, plus a buffer so scrolling doesn't show blank space.
 export function computeVisibleRange(
   itemCount: number,
   offsets: readonly number[],

@@ -38,8 +38,7 @@ export class MessageList {
     this.measureRenderedRows();
   }
 
-  // Needs viewChildren to read real row heights, which only sees this
-  // component's own template — the viewport directive can't reach it.
+  // Needs viewChildren to read row heights — the directive can't see this template.
   private measureRenderedRows(): void {
     afterRenderEffect(() => {
       const rows = this.rowRefs();

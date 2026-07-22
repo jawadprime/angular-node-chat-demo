@@ -6,7 +6,7 @@ export function findChatIdentity(db: Db, appUserId: string) {
   return getChatIdentityCollection(db).findOne({ appUserId });
 }
 
-// Creates an ACS identity for the user. If it already exists, returns the existing identity.
+// Creates an ACS identity, or returns the existing one if there's already one.
 export async function createChatIdentity(db: Db, acs: AcsClient, appUserId: string): Promise<string> {
   const collection = getChatIdentityCollection(db);
   const acsUserId = await acs.createUser();

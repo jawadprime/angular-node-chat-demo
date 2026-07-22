@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, output, signal } from '@angular/core';
 
-// Throttled, not debounced: we want the other participant to keep seeing
-// "typing…" while typing continues, not only once they pause.
+// Throttled, not debounced — keeps sending "typing" while they type, not just when they stop.
 const TYPING_THROTTLE_MS = 2000;
 
 @Component({
