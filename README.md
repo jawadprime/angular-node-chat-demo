@@ -22,8 +22,8 @@ read receipts syncing live between them.
 
 ## Tech stack
 
-- **Frontend**: Angular, TypeScript
-- **Backend**: Node.js, Express, TypeScript
+- **Frontend**: Angular, TypeScript — signals-based
+- **Backend**: Node.js, Express, TypeScript — vertical slices architecture
 - **Database**: MongoDB
 - **Realtime**: Azure Communication Services (Chat)
 - **Infra**: Docker Compose
