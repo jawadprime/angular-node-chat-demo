@@ -21,15 +21,12 @@ function extractAcsUserId(identifier?: CommunicationIdentifierKind): string {
   return identifier && isCommunicationUserIdentifier(identifier) ? identifier.communicationUserId : 'unknown';
 }
 
-// The REST history API returns message type as lowercase ("text"), but the
-// realtime signaling event returns it capitalized ("Text") — compare
-// case-insensitively so both paths recognize the same message type.
+// History API sends lowercase "text", realtime sends "Text" — compare case-insensitively.
 function isTextMessage(type: string): boolean {
   return type.toLowerCase() === 'text';
 }
 
-// Scoped per chat-container instance (not providedIn: 'root') — the state
-// here belongs to one open thread, so two chat panels must not share it.
+// One instance per chat, not a shared singleton, so two chats don't mix state.
 @Injectable()
 export class ChatService {
   private readonly chatApi = inject(ChatApiService);
@@ -71,9 +68,7 @@ export class ChatService {
     }
   }
 
-  // Loads only the most recent page of history. Older messages are fetched
-  // on demand via loadOlderMessages() as the user scrolls up, rather than
-  // eagerly loading the entire thread up front.
+  // Loads only the latest page. Older messages load later, when the user scrolls up.
   async openThread(threadId: string): Promise<void> {
     if (!this.chatClient) return;
     this.threadClient = this.chatClient.getChatThreadClient(threadId);
@@ -81,7 +76,10 @@ export class ChatService {
     this.messages.set([]);
     this.hasMoreHistory.set(true);
 
-    await this.loadNextHistoryPage();
+    const page = await this.loadNextHistoryPage();
+
+    // Send read receipts for last message seen
+    void this.markLatestAsRead(page);
   }
 
   async loadOlderMessages(): Promise<void> {
@@ -95,18 +93,16 @@ export class ChatService {
     }
   }
 
-  private async loadNextHistoryPage(): Promise<void> {
-    if (!this.historyPages) return;
+  private async loadNextHistoryPage(): Promise<ChatMessage[]> {
+    if (!this.historyPages) return [];
 
     const result = await this.historyPages.next();
     if (result.done || !result.value) {
       this.hasMoreHistory.set(false);
-      return;
+      return [];
     }
 
-    // Each page arrives newest-first; reverse it so the page itself reads
-    // oldest-first, then prepend — older pages always end up before what's
-    // already loaded.
+    // Pages arrive newest-first, so reverse before adding to the front.
     const page = result.value
       .filter((message) => isTextMessage(message.type) && message.content?.message)
       .map((message) =>
@@ -121,6 +117,15 @@ export class ChatService {
       .reverse();
 
     this.messages.update((current) => [...page, ...current]);
+    return page;
+  }
+
+  // Read receipts mean "read up to here", so marking the newest message covers the rest.
+  private async markLatestAsRead(page: ChatMessage[]): Promise<void> {
+    const latest = [...page].reverse().find((message) => !message.isOwnMessage);
+    if (latest) {
+      await this.markAsRead(latest.id);
+    }
   }
 
   async sendMessage(content: string): Promise<void> {
@@ -152,8 +157,7 @@ export class ChatService {
     const chatMessage = this.toChatMessage(event.id, event.sender, event.senderDisplayName, event.message, event.createdOn);
     this.messages.update((current) => [...current, chatMessage]);
 
-    // First-pass simplification: mark as read the instant it arrives, rather
-    // than tracking scroll position or tab visibility.
+    // Simple version: marks read on arrival, doesn't check if it's actually visible.
     if (!chatMessage.isOwnMessage) {
       void this.markAsRead(event.id);
     }
@@ -184,8 +188,28 @@ export class ChatService {
     const readerAcsUserId = extractAcsUserId(event.sender);
     if (readerAcsUserId === this.ownAcsUserId) return;
 
-    this.readMessageIds.update((current) => new Set(current).add(event.chatMessageId));
+    this.markOwnMessagesReadUpTo(event.chatMessageId);
   };
+
+  // Mark all the messages as read which are before the last seen message
+  private markOwnMessagesReadUpTo(chatMessageId: string): void {
+    const messages = this.messages();
+    const readUpToIndex = messages.findIndex((message) => message.id === chatMessageId);
+
+    const newlyReadIds =
+      readUpToIndex === -1
+        ? [chatMessageId]
+        : messages
+            .slice(0, readUpToIndex + 1)
+            .filter((message) => message.isOwnMessage)
+            .map((message) => message.id);
+
+    this.readMessageIds.update((current) => {
+      const next = new Set(current);
+      newlyReadIds.forEach((id) => next.add(id));
+      return next;
+    });
+  }
 
   private toChatMessage(
     id: string,
